@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { fetchWithRetry } from '../../../lib/fetchWithRetry';
 
 interface ElexonResponse {
-  data?: any[];
-  [key: string]: any;
+  data?: unknown[];
+  [key: string]: unknown;
+}
+
+interface ForecastItem {
+  startTime: string;
+  publishTime: string;
+  generation: number;
+  [key: string]: unknown;
 }
 
 export async function GET(req: NextRequest) {
@@ -25,7 +32,7 @@ export async function GET(req: NextRequest) {
 
     const CHUNK_SIZE_MS = 24 * 60 * 60 * 1000; // 1 day
     
-    let allData: any[] = [];
+    let allData: ForecastItem[] = [];
     let currentFromMs = publishFromMs;
 
     while (currentFromMs <= publishToMs) {
@@ -49,18 +56,18 @@ export async function GET(req: NextRequest) {
         throw new Error(`Expected array format from API, got: ${typeof data}`);
       }
 
-      allData = allData.concat(data);
+      allData = allData.concat(data as ForecastItem[]);
 
       currentFromMs = currentToMs + 1000; // Step to avoid overlap
     }
 
     const forecasts = allData
-      .map((item: any) => ({
+      .map((item: ForecastItem) => ({
         startTime: item.startTime,
         publishTime: item.publishTime,
         generation: item.generation
       }))
-      .filter((item: any) => {
+      .filter((item: ForecastItem) => {
         const targetTime = new Date(item.startTime).getTime();
         const publishTime = new Date(item.publishTime).getTime();
         const horizonHours = (targetTime - publishTime) / 3600000;
@@ -74,8 +81,9 @@ export async function GET(req: NextRequest) {
       }
     });
 
-  } catch (error: any) {
-    console.error('Error in forecasts route:', error.message);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    console.error('Error in forecasts route:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

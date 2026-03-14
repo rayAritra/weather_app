@@ -15,12 +15,13 @@ export async function fetchWithRetry(url: string, retries = 3, delayMs = 1000): 
       // For 5xx server errors, retry
       throw new Error(`Server error: ${response.status} ${response.statusText}`);
       
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : String(error);
       if (attempt >= retries) {
-        throw new Error(`Failed after ${retries} attempts: ${error.message}`);
+        throw new Error(`Failed after ${retries} attempts: ${msg}`);
       }
       
-      console.warn(`Attempt ${attempt} failed for ${url}: ${error.message}. Retrying in ${delayMs}ms...`);
+      console.warn(`Attempt ${attempt} failed for ${url}: ${msg}. Retrying in ${delayMs}ms...`);
       await new Promise(resolve => setTimeout(resolve, delayMs));
       
       delayMs *= 2; // Exponential backoff

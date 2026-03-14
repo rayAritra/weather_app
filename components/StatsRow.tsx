@@ -1,5 +1,10 @@
-export const StatsRow = ({ data }: { data: any[] }) => {
-  const withForecast = data.filter(d => d.actual !== null && d.actual !== undefined && d.forecast !== null && d.forecast !== undefined)
+import type { ChartDataPoint } from '../types'
+
+export const StatsRow = ({ data }: { data: ChartDataPoint[] }) => {
+  const withForecast = data.filter(
+    (d): d is ChartDataPoint & { actual: number; forecast: number } => 
+      d.actual !== null && d.actual !== undefined && d.forecast !== null && d.forecast !== undefined
+  )
   
   let mae = 0
   let rmse = 0

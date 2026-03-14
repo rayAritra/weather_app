@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchWithRetry } from '../../../lib/fetchWithRetry';
 
+interface FuelItem {
+  fuelType: string;
+  startTime: string;
+  generation: number;
+  [key: string]: unknown;
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -16,7 +23,7 @@ export async function GET(req: NextRequest) {
     
     const CHUNK_SIZE_MS = 24 * 60 * 60 * 1000; // 1 day
     
-    let allData: any[] = [];
+    let allData: FuelItem[] = [];
     let currentFromMs = startMs;
 
     while (currentFromMs <= endMs) {
@@ -32,21 +39,21 @@ export async function GET(req: NextRequest) {
       const url = `${baseUrl}/datasets/FUELHH/stream?settlementDateFrom=${chunkStartDate}&settlementDateTo=${chunkEndDate}&fuelType=WIND`;
       
       const response = await fetchWithRetry(url, 3, 1000);
-      const json: any = await response.json();
+      const json = await response.json();
       const data = json.data || json;
       
       if (!Array.isArray(data)) {
         throw new Error(`Expected array format from API, got: ${typeof data}`);
       }
 
-      allData = allData.concat(data);
+      allData = allData.concat(data as FuelItem[]);
 
       currentFromMs = currentToMs + 1000; // Step to avoid overlap
     }
 
     const actuals = allData
-      .filter((item: any) => item.fuelType === 'WIND')
-      .map((item: any) => ({
+      .filter((item: FuelItem) => item.fuelType === 'WIND')
+      .map((item: FuelItem) => ({
         startTime: item.startTime,
         generation: item.generation
       }))
@@ -59,8 +66,9 @@ export async function GET(req: NextRequest) {
       }
     });
 
-  } catch (error: any) {
-    console.error('Error in actuals route:', error.message);
-    return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : 'Internal server error';
+    console.error('Error in actuals route:', msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -8,14 +8,21 @@ import {
   ResponsiveContainer,
   Legend
 } from 'recharts'
+import type { ChartDataPoint } from '../types'
 
-const ChartTooltip = ({ active, payload, label }: any) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: { color: string; name: string; value: number }[];
+  label?: string;
+}
+
+const ChartTooltip = ({ active, payload, label }: TooltipProps) => {
   if (!active || !payload?.length) return null
   return (
     <div className="bg-white dark:bg-[#1c1c1b] border border-[#e5e5e4] dark:border-[#2e2e2c] p-3 text-sm rounded shadow-sm">
       <p className="font-medium text-[#8a8a85] text-xs mb-2 tracking-wide uppercase">{label}</p>
       <div className="flex flex-col gap-1.5">
-        {payload.map((entry: any, i: number) => (
+        {payload.map((entry, i: number) => (
           <div key={i} className="flex items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
@@ -29,7 +36,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
   )
 }
 
-export const GenerationChart = ({ data }: { data: any[] }) => {
+export const GenerationChart = ({ data }: { data: ChartDataPoint[] }) => {
   // not great but Recharts needs this wrapper
   return (
     <div className="w-full h-[320px] md:h-[400px] border border-[#e5e5e4] dark:border-[#2e2e2c] rounded-md shadow-sm p-4 md:p-6 bg-white dark:bg-[#1c1c1b] transition-shadow duration-300 hover:shadow-md">

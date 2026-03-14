@@ -7,6 +7,7 @@ import { StatsRow } from '../components/StatsRow'
 import { fetchActuals } from '../lib/fetchActuals'
 import { fetchForecasts } from '../lib/fetchForecasts'
 import { filterForecastsByHorizon } from '../lib/filterForecasts'
+import type { ActualGeneration, ForecastGeneration } from '../types'
 
 export default function WindPage() {
   const [start, setStart] = useState('2024-01-01T00:00')
@@ -14,8 +15,8 @@ export default function WindPage() {
   const [horizon, setHorizon] = useState(4)
   const [debouncedHorizon, setDebouncedHorizon] = useState(4)
   
-  const [actuals, setActuals] = useState<any[]>([])
-  const [forecasts, setForecasts] = useState<any[]>([])
+  const [actuals, setActuals] = useState<ActualGeneration[]>([])
+  const [forecasts, setForecasts] = useState<ForecastGeneration[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -44,8 +45,8 @@ export default function WindPage() {
         
         setActuals(act)
         setForecasts(fcast)
-      } catch (err: any) {
-        setError(err.message)
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err))
       } finally {
         setLoading(false)
       }

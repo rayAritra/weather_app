@@ -1,3 +1,12 @@
+interface ControlsProps {
+  startTime: string;
+  endTime: string;
+  horizon: number;
+  onStartChange: (val: string) => void;
+  onEndChange: (val: string) => void;
+  onHorizonChange: (val: number) => void;
+}
+
 export const Controls = ({
   startTime,
   endTime,
@@ -5,7 +14,7 @@ export const Controls = ({
   onStartChange,
   onEndChange,
   onHorizonChange
-}: any) => {
+}: ControlsProps) => {
   const startObj = new Date(startTime)
   const endObj = new Date(endTime)
   // january 2024 only per spec
