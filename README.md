@@ -12,6 +12,30 @@ The project evaluates how forecast horizons (time between forecast publication a
 - **Visualization:** Recharts
 - **Data Source:** Elexon BMRS (WINDFOR and FUELHH streams)
 
+## Directory Structure
+
+```text
+.
+├── app
+│   ├── api
+│   │   ├── actuals/        # Next.js GET proxy handling FUELHH datasets
+│   │   └── forecasts/      # Next.js GET proxy handling WINDFOR datasets
+│   ├── globals.css         # Minimalist standard layout & Tailwind directives
+│   ├── layout.tsx          # System-native layout renderer
+│   └── page.tsx            # Dashboard orchestration & debounced hooks
+├── components
+│   ├── Controls.tsx        # Boundless input range & horizon UI forms
+│   ├── GenerationChart.tsx # Restyled headless Recharts component 
+│   └── StatsRow.tsx        # Local data intersection calculations
+├── lib
+│   ├── fetchActuals.ts     # Client typed fetcher 
+│   ├── fetchForecasts.ts   # Client typed fetcher
+│   ├── fetchWithRetry.ts   # Exponential backoff handler
+│   └── filterForecasts.ts  # Horizon constraint matching engine
+└── types
+    └── index.ts            # Shared TS interfaces
+```
+
 ## Data Pipeline
 
 The Elexon API presents specific challenges regarding historical data extraction and parameter strictness. To ensure a resilient pipeline, all browser requests are proxied through local Next.js API routes (`/api/actuals` and `/api/forecasts`), which handle:
