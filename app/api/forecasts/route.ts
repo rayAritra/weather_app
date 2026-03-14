@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { fetchWithRetry } from '../../../lib/fetchWithRetry';
+
+interface ElexonResponse {
+  data?: any[];
+  [key: string]: any;
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,47 +15,39 @@ export async function GET(req: NextRequest) {
     if (!startTime || !endTime) {
       return NextResponse.json({ error: 'startTime and endTime are required' }, { status: 400 });
     }
-    // Calculate publish ranges to ensure we have forecasts for the start of the horizon
+
     const startMs = new Date(startTime).getTime();
     const endMs = new Date(endTime).getTime();
     
-    // To have forecast up to 48 hours ahead for the start of the window,
-    // we need to look back at publish times up to 48 hours before start.
-    const overallPublishFromMs = startMs - 48 * 60 * 60 * 1000;
-    const overallPublishToMs = endMs;
+    // Look back 48 hours to secure forecast available for the target window
+    const publishFromMs = startMs - 48 * 60 * 60 * 1000;
+    const publishToMs = endMs;
 
-    // The API restricts queries to a max of 7 days (7 * 24 * 60 * 60 * 1000 ms)
-    const MAX_RANGE_MS = 7 * 24 * 60 * 60 * 1000;
+    const CHUNK_SIZE_MS = 24 * 60 * 60 * 1000; // 1 day
     
     let allData: any[] = [];
-    let currentFromMs = overallPublishFromMs;
+    let currentFromMs = publishFromMs;
 
-    while (currentFromMs <= overallPublishToMs) {
-      let currentToMs = currentFromMs + MAX_RANGE_MS;
-      if (currentToMs > overallPublishToMs) {
-        currentToMs = overallPublishToMs;
-      }
+    while (currentFromMs <= publishToMs) {
+      const currentToMs = Math.min(currentFromMs + CHUNK_SIZE_MS, publishToMs);
       
-      const publishFrom = new Date(currentFromMs).toISOString();
-      const publishTo = new Date(currentToMs).toISOString();
+      const chunkStart = new Date(currentFromMs).toISOString();
+      const chunkEnd = new Date(currentToMs).toISOString();
       
-      const url = `https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR?publishDateTimeFrom=${encodeURIComponent(publishFrom)}&publishDateTimeTo=${encodeURIComponent(publishTo)}`;
+      const url = `https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR/stream?publishDateTimeFrom=${encodeURIComponent(chunkStart)}&publishDateTimeTo=${encodeURIComponent(chunkEnd)}`;
       
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`API responded with status: ${response.status}`);
-      }
-
-      const json = await response.json();
-      const data = json.data || json;
+      const response = await fetchWithRetry(url, 3, 1000);
+      const json: ElexonResponse = await response.json();
+      
+      const data = json.data || json; // Handle both wrapped and unwrapped arrays depending on endpoint flavor
       
       if (!Array.isArray(data)) {
-        return NextResponse.json({ error: 'Expected array format from API', raw: json }, { status: 500 });
+        throw new Error(`Expected array format from API, got: ${typeof data}`);
       }
 
       allData = allData.concat(data);
 
-      currentFromMs = currentToMs + 1000; // Increment to avoid overlap
+      currentFromMs = currentToMs + 1000; // Step to avoid overlap
     }
 
     const forecasts = allData
@@ -59,21 +57,21 @@ export async function GET(req: NextRequest) {
         generation: item.generation
       }))
       .filter((item: any) => {
-        const targetMs = new Date(item.startTime).getTime();
-        const publishMs = new Date(item.publishTime).getTime();
-        const horizonHours = (targetMs - publishMs) / (1000 * 60 * 60);
+        const targetTime = new Date(item.startTime).getTime();
+        const publishTime = new Date(item.publishTime).getTime();
+        const horizonHours = (targetTime - publishTime) / 3600000;
         return horizonHours >= 0 && horizonHours <= 48;
-      })
-      .sort((a, b) => {
-        const timeDiff = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-        if (timeDiff !== 0) return timeDiff;
-        return new Date(a.publishTime).getTime() - new Date(b.publishTime).getTime();
       });
 
-    return NextResponse.json(forecasts);
+    return NextResponse.json(forecasts, {
+      status: 200,
+      headers: {
+        'Cache-Control': 's-maxage=3600, stale-while-revalidate'
+      }
+    });
 
   } catch (error: any) {
-    console.error('Error in forecasts route:', error);
+    console.error('Error in forecasts route:', error.message);
     return NextResponse.json({ error: error.message || 'Internal server error' }, { status: 500 });
   }
 }

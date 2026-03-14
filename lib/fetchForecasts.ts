@@ -7,7 +7,13 @@ export async function fetchForecasts(startTime: string, endTime: string): Promis
   
   const res = await fetch(url.toString());
   if (!res.ok) {
-    throw new Error('Failed to fetch forecasts');
+    const errorText = await res.text();
+    throw new Error(`Failed to fetch forecasts: ${res.status} ${errorText}`);
   }
-  return res.json();
+  
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  return data;
 }

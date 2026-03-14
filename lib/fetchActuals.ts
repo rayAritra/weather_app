@@ -7,7 +7,13 @@ export async function fetchActuals(startTime: string, endTime: string): Promise<
   
   const res = await fetch(url.toString());
   if (!res.ok) {
-    throw new Error('Failed to fetch actuals');
+    const errorText = await res.text();
+    throw new Error(`Failed to fetch actuals: ${res.status} ${errorText}`);
   }
-  return res.json();
+  
+  const data = await res.json();
+  if (!Array.isArray(data) || data.length === 0) {
+    return [];
+  }
+  return data;
 }
