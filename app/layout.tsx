@@ -1,11 +1,8 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
-
 export const metadata: Metadata = {
-  title: 'UK Wind Power Forecast Monitor',
+  title: 'Wind Generation — UK',
   description: 'Monitor wind power forecasts against actual generation in the UK',
 };
 
@@ -16,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="antialiased">
-      <body className={inter.className}>{children}</body>
+      <body>{children}</body>
     </html>
   );
 }

@@ -30,12 +30,13 @@ export const GenerationChart = ({ data }: { data: any[] }) => {
   return (
     <div className="w-full h-[320px] md:h-[400px] border border-[#e5e5e4] dark:border-[#2e2e2c] rounded-md p-4 md:p-6 bg-white dark:bg-[#1c1c1b]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={data} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+        <LineChart data={data} margin={{ top: 5, right: 0, left: -20, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e4" vertical={false} />
           <XAxis 
             dataKey="time" 
+            height={60}
             tick={{ fontSize: 11, fill: '#8a8a85' }}
-            tickMargin={10}
+            tickMargin={15}
             angle={-35}
             textAnchor="end"
             axisLine={false}
@@ -49,7 +50,7 @@ export const GenerationChart = ({ data }: { data: any[] }) => {
           />
           <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#e5e5e4', strokeWidth: 1 }} />
           <Legend 
-            wrapperStyle={{ fontSize: '12px', color: '#8a8a85', marginTop: '10px' }}
+            wrapperStyle={{ fontSize: '12px', color: '#8a8a85', paddingTop: '10px' }}
             iconType="circle"
             iconSize={8}
             verticalAlign="bottom"
