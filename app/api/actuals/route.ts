@@ -22,10 +22,10 @@ export async function GET(req: NextRequest) {
     while (currentFromMs <= endMs) {
       const currentToMs = Math.min(currentFromMs + CHUNK_SIZE_MS, endMs);
       
-      const chunkStart = new Date(currentFromMs).toISOString();
-      const chunkEnd = new Date(currentToMs).toISOString();
+      const chunkStartDate = new Date(currentFromMs).toISOString().split('T')[0];
+      const chunkEndDate = new Date(currentToMs).toISOString().split('T')[0];
       
-      const url = `https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH/stream?startTime=${encodeURIComponent(chunkStart)}&endTime=${encodeURIComponent(chunkEnd)}&fuelType=WIND`;
+      const url = `https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH/stream?settlementDateFrom=${chunkStartDate}&settlementDateTo=${chunkEndDate}&fuelType=WIND`;
       
       const response = await fetchWithRetry(url, 3, 1000);
       const json: any = await response.json();
