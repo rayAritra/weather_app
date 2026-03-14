@@ -34,7 +34,10 @@ export async function GET(req: NextRequest) {
       const chunkStart = new Date(currentFromMs).toISOString();
       const chunkEnd = new Date(currentToMs).toISOString();
       
-      const baseUrl = process.env.ELEXON_API_BASE_URL || 'https://data.elexon.co.uk/bmrs/api/v1';
+      const baseUrl = process.env.ELEXON_API_BASE_URL;
+      if (!baseUrl) {
+        throw new Error('ELEXON_API_BASE_URL is not defined in environment variables');
+      }
       const url = `${baseUrl}/datasets/WINDFOR/stream?publishDateTimeFrom=${encodeURIComponent(chunkStart)}&publishDateTimeTo=${encodeURIComponent(chunkEnd)}`;
       
       const response = await fetchWithRetry(url, 3, 1000);
