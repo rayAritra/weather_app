@@ -18,14 +18,14 @@ export const Controls = ({
           type="datetime-local" 
           value={startTime}
           onChange={e => onStartChange(e.target.value)}
-          className="border border-[#e5e5e4] dark:border-[#2e2e2c] rounded px-3 py-1.5 text-sm bg-white dark:bg-[#1c1c1b] focus:outline-none focus:ring-1 focus:ring-blue-600"
+          className="border border-[#e5e5e4] dark:border-[#2e2e2c] rounded px-3 py-1.5 text-sm bg-white dark:bg-[#1c1c1b] hover:border-[#d1d1d0] dark:hover:border-[#4e4e4c] transition-colors focus:outline-none focus:ring-1 focus:ring-blue-600"
         />
         <span className="muted">to</span>
         <input 
           type="datetime-local" 
           value={endTime}
           onChange={e => onEndChange(e.target.value)}
-          className="border border-[#e5e5e4] dark:border-[#2e2e2c] rounded px-3 py-1.5 text-sm bg-white dark:bg-[#1c1c1b] focus:outline-none focus:ring-1 focus:ring-blue-600"
+          className="border border-[#e5e5e4] dark:border-[#2e2e2c] rounded px-3 py-1.5 text-sm bg-white dark:bg-[#1c1c1b] hover:border-[#d1d1d0] dark:hover:border-[#4e4e4c] transition-colors focus:outline-none focus:ring-1 focus:ring-blue-600"
         />
       </div>
       

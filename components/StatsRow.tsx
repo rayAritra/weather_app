@@ -23,22 +23,33 @@ export const StatsRow = ({ data }: { data: any[] }) => {
   const formatVal = (v: number) => new Intl.NumberFormat('en-GB').format(v)
 
   return (
-    <div className="flex flex-row gap-6 mt-4">
-      <div>
-        <span className="text-xs text-muted uppercase tracking-wide">MAE</span>
-        <span className="text-sm font-medium ml-1">{formatVal(mae)} MW</span>
+    <div className="flex flex-wrap gap-8 md:gap-12 mt-8 mb-6 border-y border-[#e5e5e4] dark:border-[#2e2e2c] py-4">
+      <div className="flex flex-col gap-1">
+        <span className="text-[11px] text-[#8a8a85] uppercase tracking-widest font-medium">MAE</span>
+        <span className="text-lg font-medium tracking-tight text-[#1a1a18] dark:text-[#eeeeec]">
+          {formatVal(mae)} <span className="text-xs text-[#8a8a85] font-normal ml-0.5">MW</span>
+        </span>
       </div>
-      <div>
-        <span className="text-xs text-muted uppercase tracking-wide">RMSE</span>
-        <span className="text-sm font-medium ml-1">{formatVal(rmse)} MW</span>
+      <div className="w-[1px] bg-[#e5e5e4] dark:bg-[#2e2e2c] hidden md:block" />
+      <div className="flex flex-col gap-1">
+        <span className="text-[11px] text-[#8a8a85] uppercase tracking-widest font-medium">RMSE</span>
+        <span className="text-lg font-medium tracking-tight text-[#1a1a18] dark:text-[#eeeeec]">
+          {formatVal(rmse)} <span className="text-xs text-[#8a8a85] font-normal ml-0.5">MW</span>
+        </span>
       </div>
-      <div>
-        <span className="text-xs text-muted uppercase tracking-wide">Bias</span>
-        <span className="text-sm font-medium ml-1">{bias > 0 ? '+' : ''}{formatVal(bias)} MW</span>
+      <div className="w-[1px] bg-[#e5e5e4] dark:bg-[#2e2e2c] hidden md:block" />
+      <div className="flex flex-col gap-1">
+        <span className="text-[11px] text-[#8a8a85] uppercase tracking-widest font-medium">Bias</span>
+        <span className="text-lg font-medium tracking-tight text-[#1a1a18] dark:text-[#eeeeec]">
+          {bias > 0 ? '+' : ''}{formatVal(bias)} <span className="text-xs text-[#8a8a85] font-normal ml-0.5">MW</span>
+        </span>
       </div>
-      <div>
-        <span className="text-xs text-muted uppercase tracking-wide">Coverage</span>
-        <span className="text-sm font-medium ml-1">{coverage}%</span>
+      <div className="w-[1px] bg-[#e5e5e4] dark:bg-[#2e2e2c] hidden md:block" />
+      <div className="flex flex-col gap-1">
+        <span className="text-[11px] text-[#8a8a85] uppercase tracking-widest font-medium">Coverage</span>
+        <span className="text-lg font-medium tracking-tight text-[#1a1a18] dark:text-[#eeeeec]">
+          {coverage}<span className="text-xs text-[#8a8a85] font-normal ml-0.5">%</span>
+        </span>
       </div>
     </div>
   )

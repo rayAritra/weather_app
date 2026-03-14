@@ -12,15 +12,19 @@ import {
 const ChartTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white dark:bg-[#1c1c1b] border border-[#e5e5e4] dark:border-[#2e2e2c] p-2 text-sm rounded">
-      <p className="font-medium mb-1">{label}</p>
-      {payload.map((entry: any, i: number) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
-          <span className="muted">{entry.name}:</span>
-          <span>{entry.value} MW</span>
-        </div>
-      ))}
+    <div className="bg-white dark:bg-[#1c1c1b] border border-[#e5e5e4] dark:border-[#2e2e2c] p-3 text-sm rounded shadow-sm">
+      <p className="font-medium text-[#8a8a85] text-xs mb-2 tracking-wide uppercase">{label}</p>
+      <div className="flex flex-col gap-1.5">
+        {payload.map((entry: any, i: number) => (
+          <div key={i} className="flex items-center justify-between gap-6">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+              <span className="text-[#1a1a18] dark:text-[#eeeeec] font-medium">{entry.name}</span>
+            </div>
+            <span className="tabular-nums font-medium">{entry.value} MW</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
@@ -28,7 +32,7 @@ const ChartTooltip = ({ active, payload, label }: any) => {
 export const GenerationChart = ({ data }: { data: any[] }) => {
   // not great but Recharts needs this wrapper
   return (
-    <div className="w-full h-[320px] md:h-[400px] border border-[#e5e5e4] dark:border-[#2e2e2c] rounded-md p-4 md:p-6 bg-white dark:bg-[#1c1c1b]">
+    <div className="w-full h-[320px] md:h-[400px] border border-[#e5e5e4] dark:border-[#2e2e2c] rounded-md shadow-sm p-4 md:p-6 bg-white dark:bg-[#1c1c1b] transition-shadow duration-300 hover:shadow-md">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 0, left: -20, bottom: 10 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e4" vertical={false} />
@@ -64,7 +68,7 @@ export const GenerationChart = ({ data }: { data: any[] }) => {
             strokeWidth={1.5}
             dot={false}
             activeDot={{ r: 3, strokeWidth: 0 }}
-            isAnimationActive={false}
+            isAnimationActive={true}
           />
           <Line 
             name="Forecast (≥4h horizon)"
@@ -75,7 +79,7 @@ export const GenerationChart = ({ data }: { data: any[] }) => {
             dot={false}
             activeDot={{ r: 3, strokeWidth: 0 }}
             connectNulls={false}
-            isAnimationActive={false}
+            isAnimationActive={true}
           />
         </LineChart>
       </ResponsiveContainer>
