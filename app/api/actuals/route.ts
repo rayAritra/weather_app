@@ -25,7 +25,8 @@ export async function GET(req: NextRequest) {
       const chunkStartDate = new Date(currentFromMs).toISOString().split('T')[0];
       const chunkEndDate = new Date(currentToMs).toISOString().split('T')[0];
       
-      const url = `https://data.elexon.co.uk/bmrs/api/v1/datasets/FUELHH/stream?settlementDateFrom=${chunkStartDate}&settlementDateTo=${chunkEndDate}&fuelType=WIND`;
+      const baseUrl = process.env.ELEXON_API_BASE_URL || 'https://data.elexon.co.uk/bmrs/api/v1';
+      const url = `${baseUrl}/datasets/FUELHH/stream?settlementDateFrom=${chunkStartDate}&settlementDateTo=${chunkEndDate}&fuelType=WIND`;
       
       const response = await fetchWithRetry(url, 3, 1000);
       const json: any = await response.json();

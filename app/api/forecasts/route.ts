@@ -34,7 +34,8 @@ export async function GET(req: NextRequest) {
       const chunkStart = new Date(currentFromMs).toISOString();
       const chunkEnd = new Date(currentToMs).toISOString();
       
-      const url = `https://data.elexon.co.uk/bmrs/api/v1/datasets/WINDFOR/stream?publishDateTimeFrom=${encodeURIComponent(chunkStart)}&publishDateTimeTo=${encodeURIComponent(chunkEnd)}`;
+      const baseUrl = process.env.ELEXON_API_BASE_URL || 'https://data.elexon.co.uk/bmrs/api/v1';
+      const url = `${baseUrl}/datasets/WINDFOR/stream?publishDateTimeFrom=${encodeURIComponent(chunkStart)}&publishDateTimeTo=${encodeURIComponent(chunkEnd)}`;
       
       const response = await fetchWithRetry(url, 3, 1000);
       const json: ElexonResponse = await response.json();
