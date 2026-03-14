@@ -1,5 +1,7 @@
 # Wind Power Forecast Monitor
 
+**Live App:** [https://weather-app-mocha-chi-69.vercel.app/](https://weather-app-mocha-chi-69.vercel.app/)
+
 A minimalist React dashboard for analyzing the accuracy of UK wind generation forecasts against actual metered output. Built to process data from the Elexon BMRS API.
 
 The project evaluates how forecast horizons (time between forecast publication and the target window) impact accuracy using standard statistical metrics.
