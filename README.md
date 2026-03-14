@@ -1,64 +1,46 @@
-# UK Wind Power Forecast Monitor
+# Wind Power Forecast Monitor
 
-A production-ready monitoring dashboard comparing actual wind power generation against forecasted generation in the UK.
+A minimalist React dashboard for analyzing the accuracy of UK wind generation forecasts against actual metered output. Built to process data from the Elexon BMRS API.
 
-Built with AI assistance (Claude).
+The project evaluates how forecast horizons (time between forecast publication and the target window) impact accuracy using standard statistical metrics.
 
-## Tech Stack
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **Components**: Radix UI (react-slider), lucide-react
-- **Charts**: Recharts
-- **Date Handling**: date-fns
-- **Platform/Hosting**: Vercel
+## Architecture
 
-## Requirements
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS (custom minimalist design system)
+- **Visualization:** Recharts
+- **Data Source:** Elexon BMRS (WINDFOR and FUELHH streams)
 
-- Node.js 18.17 or later
+## Data Pipeline
 
-## How to run locally
+The Elexon API presents specific challenges regarding historical data extraction and parameter strictness. To ensure a resilient pipeline, all browser requests are proxied through local Next.js API routes (`/api/actuals` and `/api/forecasts`), which handle:
 
-1. Open a terminal and navigate to the project root.
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Run the development server:
-   ```bash
-   npm run dev
-   ```
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
+1. **Date Chunking:** Elexon enforces maximum query windows (e.g., 7 days for REST WINDFOR). The backend intercepts requested date ranges and automatically chunks them into 24-hour fragments.
+2. **Endpoint Normalization:** 
+   - Forecasts are fetched using `WINDFOR/stream` with `publishDateTimeFrom` parameters, going backwards 48 hours to guarantee horizon availability for the start of the window.
+   - Actuals are fetched via `FUELHH/stream` utilizing strict `settlementDateFrom` parameters (bypassing the stream's bugged `startTime` ISO parser).
+3. **Resiliency:** A custom exponential backoff utility handles occasional 5xx server closures from BMRS without crashing the client state.
 
-## How to deploy to Vercel
+## Core Logic
 
-1. Push your code to a GitHub, GitLab, or Bitbucket repository.
-2. Go to your [Vercel Dashboard](https://vercel.com/dashboard) and click "Add New" -> "Project".
-3. Import your repository.
-4. Vercel will auto-detect Next.js and apply the correct build settings.
-5. Click "Deploy".
-*Note: No environment variables are required as all APIs are public.*
+The application matches 30-minute actual physical generation periods with the best available hourly horizon forecast.
 
-## File structure
+Inside `lib/filterForecasts.ts`, the matching mechanism:
+- Groups the raw `WINDFOR` dataset by target time.
+- Implements an hour-floor fallback mechanism out of necessity (actuals generate at hh:00 and hh:30, whereas forecasts often only publish for hh:00 target times).
+- Reversely filters the array to identify the latest forecasted output published *before* the strict `< target time - computed horizon >` cutoff.
 
-```text
-wind-forecast-monitor/
-├── app/
-│   ├── page.tsx               # Main dashboard component
-│   ├── layout.tsx             # Root layout and metadata
-│   ├── globals.css            # Global Tailwind CSS styles
-│   └── api/
-│       ├── actuals/route.ts   # Proxy endpoint for Elexon Actual Generaton API
-│       └── forecasts/route.ts # Proxy endpoint for Elexon Forecast Generation API
-├── components/
-│   ├── DateRangePicker.tsx    # Date start/end input
-│   ├── HorizonSlider.tsx      # Radix UI Slider for horizon hours
-│   ├── GenerationChart.tsx    # Recharts Line Chart for plotting Actual/Forecasts
-│   └── StatsBar.tsx           # Stat cards summarizing predictions (MAE, RMSE, Bias, etc)
-├── lib/
-│   ├── fetchActuals.ts        # Client API request hook for Actuals
-│   ├── fetchForecasts.ts      # Client API request hook for Forecasts
-│   └── filterForecasts.ts     # Core filtering logic to pick latest forecasts given a cutoff
-├── types/
-│   └── index.ts               # Core TS Interfaces
+Statistical functions (MAE, RMSE, Bias, Coverage Percentage) run entirely in-browser purely based on successful paired tuples.
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm run dev
 ```
+
+Visit `http://localhost:3000` to view the application metrics.
